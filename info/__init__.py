@@ -30,10 +30,10 @@ def create_app(config_name):
 
 def setup_log(level):
     """
-        配置日志等级
-        :param level: 日志等级：根据开发环境而变（dev--DEBUG; prod--WARNING）
-        :return: None
-        """
+    配置日志等级
+    :param level: 日志等级：根据开发环境而变（dev--DEBUG; prod--WARNING）
+    :return: None
+    """
     # 设置日志的记录等级。
     logging.basicConfig(level=level)  # 调试debug级
     # 创建日志记录器，指明日志保存的路径、每个日志文件的最大大小、保存的日志文件个数上限
