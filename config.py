@@ -1,5 +1,5 @@
 from redis import StrictRedis
-
+import logging
 
 class Config(object):
     DEBUG = True
@@ -21,10 +21,11 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-
+    LOGGING_LEVEL = logging.DEBUG
 
 class ProductionConfig(Config):
     DEBUG = False
+    LOGGING_LEVEL = logging.WARNING
 
 
 configs = {
