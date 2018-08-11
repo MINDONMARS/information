@@ -6,6 +6,7 @@ from redis import StrictRedis
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from config import configs
+from info.modules.index import index_blue
 
 db = SQLAlchemy()
 redis_store = None  # type: StrictRedis
@@ -25,6 +26,8 @@ def create_app(config_name):
     global redis_store
     redis_store = StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT)
     CSRFProtect(app)
+    # 注册蓝图
+    app.register_blueprint(index_blue)
     return app
 
 

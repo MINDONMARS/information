@@ -35,9 +35,9 @@ Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return 'index'
+# @app.route('/', methods=['GET', 'POST'])
+# def index():
+#     return 'index'
 
 
 if __name__ == '__main__':
