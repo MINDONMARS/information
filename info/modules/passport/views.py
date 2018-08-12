@@ -8,7 +8,7 @@ from info import constants
 from info import redis_store
 from info import response_code
 from info.libs.yuntongxun.sms import CCP
-# from utils.captcha.captcha import captcha
+from utils.captcha.captcha import captcha
 from . import passport_blue
 
 
@@ -65,24 +65,24 @@ def send_sms_code():
     # 返回结果
     return jsonify(errno=response_code.RET.OK, errmsg='发送短信成功')
 
-#
-# @passport_blue.route('/image_code')
-# def get_image_code():
-#     # 接收图片uuid
-#     image_code_id = request.args.get("imageCodeId")
-#     # 校验uuid
-#     if not image_code_id:
-#         abort(400)
-#     # 生成验证码的图片和文字信息
-#     name, text, image = captcha.instance()
-#     # 讲uuid和图片验证码文字绑定到redis
-#     try:
-#         redis_store.set("imageCode:" + image_code_id, text, constants.IMAGE_CODE_REDIS_EXPIRES)
-#     except Exception as e:
-#         logging.error(e)
-#         abort(500)
-#     # 响应
-#     response = make_response()
-#     response.header['Content-Type'] = 'image/jpg'
-#     return response
+
+@passport_blue.route('/image_code')
+def get_image_code():
+    # 接收图片uuid
+    image_code_id = request.args.get("imageCodeId")
+    # 校验uuid
+    if not image_code_id:
+        abort(400)
+    # 生成验证码的图片和文字信息
+    name, text, image = captcha.instance()
+    # 讲uuid和图片验证码文字绑定到redis
+    try:
+        redis_store.set("imageCode:" + image_code_id, text, constants.IMAGE_CODE_REDIS_EXPIRES)
+    except Exception as e:
+        logging.error(e)
+        abort(500)
+    # 响应
+    response = make_response()
+    response.header['Content-Type'] = 'image/jpg'
+    return response
 
