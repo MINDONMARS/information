@@ -1,6 +1,5 @@
 import logging
 import re, random
-
 from flask import abort, jsonify
 from flask import make_response
 from flask import request
@@ -12,7 +11,7 @@ from utils.captcha.captcha import captcha
 from . import passport_blue
 
 
-@passport_blue.route('/sms_code', methods=['port'])
+@passport_blue.route('/sms_code', methods=['POST'])
 def send_sms_code():
     """发送短信验证码
     1.接受参数：mobile, image_code, image_code_id
@@ -28,7 +27,7 @@ def send_sms_code():
     json_dict = request.json
     mobile = json_dict.get('mobile')
     image_code_client = json_dict.get('image_code')
-    image_code_id = json_dict.get('image_code')
+    image_code_id = json_dict.get('image_code_id')
     # 校验参数: 是否齐全, 手机号格式是否正确
     if not all([mobile, image_code_client, image_code_id]):
         return jsonify(errno=response_code.RET.PARAMERR, errmsg='缺少必传参数')
@@ -37,8 +36,10 @@ def send_sms_code():
     # 使用image_code_id从redis中读取出服务器存储的图片验证码
     try:
         image_code_server = redis_store.get(
-            'imageCode:' + image_code_id
+
+            "imageCode:" + image_code_id
         )
+        print(image_code_server)
     except Exception as e:
         logging.error(e)
         return jsonify(errno=response_code.RET.PARAMERR, errmsg='查询验证码失败')
@@ -52,12 +53,13 @@ def send_sms_code():
     sms_code = "%06d" % random.randint(0, 999999)
     logging.debug(sms_code)
     # CCP()单例发送验证码
+    # result = CCP().send_sms_code(mobile, [sms_code, 5], 1)
     result = CCP().send_sms_code(mobile, [sms_code, 5], 1)
     if result != 0:
         return jsonify(errno=response_code.RET.THIRDERR, errmsg='发送短信失败')
     # 发送成功, 将验证码存储到redis
     try:
-        redis_store.set('SMS:', + mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
+        redis_store.set('SMS:' + mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
     except Exception as e:
         logging.error(e)
         return jsonify(errno=response_code.RET.DATAERR, errmsg='存储短信失败')
@@ -70,11 +72,13 @@ def send_sms_code():
 def get_image_code():
     # 接收图片uuid
     image_code_id = request.args.get("imageCodeId")
+
     # 校验uuid
     if not image_code_id:
         abort(400)
     # 生成验证码的图片和文字信息
-    name, text, image = captcha.instance()
+    name, text, image = captcha.generate_captcha()
+
     # 讲uuid和图片验证码文字绑定到redis
     try:
         redis_store.set("imageCode:" + image_code_id, text, constants.IMAGE_CODE_REDIS_EXPIRES)
@@ -82,7 +86,7 @@ def get_image_code():
         logging.error(e)
         abort(500)
     # 响应
-    response = make_response()
-    response.header['Content-Type'] = 'image/jpg'
+    response = make_response(image)
+    response.headers['Content-Type'] = 'image/jpg'
     return response
 

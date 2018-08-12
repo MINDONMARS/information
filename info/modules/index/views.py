@@ -3,7 +3,7 @@ from flask import render_template,current_app
 from . import index_blue
 
 
-@index_blue.route('/', methods=['GET', 'POST'])
+@index_blue.route('/')
 def index():
     return render_template('news/index.html')
 

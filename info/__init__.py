@@ -24,8 +24,8 @@ def create_app(config_name):
     db.init_app(app)
     Session(app)
     global redis_store
-    redis_store = StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT)
-    CSRFProtect(app)
+    redis_store = StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT, decode_responses=True)
+    # CSRFProtect(app)
     # 注册蓝图
     from info.modules.index import index_blue
     app.register_blueprint(index_blue)

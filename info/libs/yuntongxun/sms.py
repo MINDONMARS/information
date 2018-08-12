@@ -3,13 +3,13 @@
 from info.libs.yuntongxun.CCPRestSDK import REST
 
 # 说明：主账号，登陆云通讯网站后，可在"控制台-应用"中看到开发者主账号ACCOUNT SID
-_accountSid = '8aaf070862181ad5016236f3bcc811d5'
+_accountSid = '8aaf07086521916801652d2332ee0734'
 
 # 说明：主账号Token，登陆云通讯网站后，可在控制台-应用中看到开发者主账号AUTH TOKEN
-_accountToken = '4e831592bd464663b0de944df13f16ef'
+_accountToken = '1d8d4a5bdc71430aa7767bd951ff025e'
 
 # 请使用管理控制台首页的APPID或自己创建应用的APPID
-_appId = '8aaf070862181ad5016236f3bd2611dc'
+_appId = '8aaf07086521916801652d233340073a'
 
 # 说明：请求地址，生产环境配置成app.cloopen.com
 _serverIP = 'sandboxapp.cloopen.com'
@@ -58,14 +58,29 @@ class CCP(object):
 
         return cls._instansce
 
+    def send_sms_code(self, to, datas, tempId):
+        """
+        单例发送短信的方法:需要单例对象才能调用的
+        :param to: 发送短信的手机
+        :param datas: ['sms_code', 短信提示过期的时间]
+        :param tempId: 默认免费的是1
+        :return: 如果发送短信成功，返回0；反之，返回-1
+        """
+        # self ： 代表CCP()初始化出来的单例_instance
+        # sendTemplateSMS : 是容联云通讯提供的发送短信的底层方法，我只借用了一下，在外面套了壳子（send_sms_code）
+        result = self.rest.sendTemplateSMS(to, datas, tempId)
+
+        if result.get('statusCode') != '000000':
+            return -1
+        else:
+            return 0
 
 
 
 
 
 
-
-
-if __name__ == '__main__':
-    # 注意： 测试的短信模板编号为1
-    sendTemplateSMS('your mobile number', ['666666', 5], 1)
+#
+# if __name__ == '__main__':
+#     # 注意： 测试的短信模板编号为1
+#     sendTemplateSMS('your mobile number', ['666666', 5], 1)
