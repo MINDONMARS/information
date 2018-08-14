@@ -41,8 +41,10 @@ def register():
     # 正确, 创建User模型对象
     user = User()
     user.nick_name = mobile  # 用户昵称(默认手机号)
-    #
-    user.password_hash = password  # 加密的密码(明文...)
+    # 明文密码
+    # user.password_hash = password  # 加密的密码(明文...)
+    # 密文密码(@property)
+    user.password = password
 
     user.mobile = mobile  # 手机号
     # 获取登录时间

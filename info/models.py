@@ -81,6 +81,25 @@ class User(BaseModel, db.Model):
         }
         return resp_dict
 
+    @property
+    def password(self):
+        """
+        password属性的getter方法
+        :return: 不让读, 抛异常
+        """
+        return AttributeError('can not read')
+
+    @password.setter
+    def password(self, value):
+        """
+        password属性的setter方法
+        :param value: 传入的明文密码
+        :return: 密文密码
+        """
+        self.password_hash = generate_password_hash(value)
+
+
+
 
 class News(BaseModel, db.Model):
     """新闻"""
