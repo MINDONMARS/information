@@ -11,6 +11,8 @@ from utils.captcha.captcha import captcha
 from . import passport_blue
 
 
+@passport_blue.route('/')
+
 @passport_blue.route('/sms_code', methods=['POST'])
 def send_sms_code():
     """发送短信验证码
@@ -39,7 +41,6 @@ def send_sms_code():
 
             "imageCode:" + image_code_id
         )
-        print(image_code_server)
     except Exception as e:
         logging.error(e)
         return jsonify(errno=response_code.RET.PARAMERR, errmsg='查询验证码失败')
