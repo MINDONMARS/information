@@ -13,6 +13,11 @@ from utils.captcha.captcha import captcha
 from . import passport_blue
 
 
+@passport_blue.route('/logout')
+def logout():
+    pass
+
+
 @passport_blue.route('/login', methods=['post'])
 def login():
     # 接收参数
