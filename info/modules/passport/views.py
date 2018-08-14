@@ -13,6 +13,46 @@ from utils.captcha.captcha import captcha
 from . import passport_blue
 
 
+@passport_blue.route('/login')
+def login():
+    # 接收参数
+    json_dict = request.json
+    mobile = json_dict.get('mobile')
+    password = json_dict.get('password')
+    # 校验参数
+    if not all([mobile, password]):
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='缺少参数')
+    # 校验手机号
+    if not re.match('^1[345678][0-9]{9}$', mobile):
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='手机号格式错误')
+    # 看mysql中有没有这个手机号
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=response_code.RET.DBERR, errmsg='用户名或密码错误')
+    # 用户是否存在
+    if not user:
+        return jsonify(errno=response_code.RET.NODATA, errmsg='用户名或密码错误')
+    # 校验密码
+    if not user.check_password(password):
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='用户名或密码错误')
+    # 记录最后登录时间(做状态保持)
+    user.last_login = datetime.datetime.now()
+    # 写入数据库
+    try:
+        db.session.commit()
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=response_code.RET.DATAERR, errmsg='登录失败')
+    # 状态保持
+    session['user_id'] = user.id
+    session['nick_name'] = user.nick_name
+    session['mobile'] = mobile
+    return jsonify(errno=response_code.RET.OK, errmsg='登录成功')
+
+
+
 @passport_blue.route('/register', methods=['post'])
 def register():
     # 接收参数 mobile, password
