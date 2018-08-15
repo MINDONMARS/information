@@ -1,8 +1,10 @@
 import logging
-from flask import render_template, current_app
+from flask import render_template, current_app, jsonify
+from flask import request
 from flask import session
 
 from info import constants
+from info import response_code
 from info.models import User, News, Category
 from . import index_blue
 
@@ -17,7 +19,41 @@ def index_news_list():
     5. 生成响应
     6. 返回响应
     """
-
+    # 1
+    cid = request.args.get('cid', '1')
+    page = request.args.get('page', '1')
+    per_page = request.args.get('per_page', '10')
+    # 2
+    if not all([cid, page, per_page]):
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='缺少参数')
+    # 3
+    try:
+        cid = int(cid)
+        page = int(page)
+        per_page = int(per_page)
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='参数错误')
+    # 4. 根据参数分页查询
+    try:
+        if cid == 1:
+            # 最新分类, 查询所有新闻按时间倒序排序
+            paginate = News.query.order_by(News.create_time.desc()).paginate(page, per_page, False)
+        else:
+            paginate = News.query.filter(News.category_id == cid).order_by(News.create_time.desc()).paginate(page, per_page, False)
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=response_code.RET.DBERR, errmsg='查询数据失败')
+    # 生成响应数据
+    total_page = paginate.pages  # 总页数
+    current_page = paginate.page  # 当前页
+    news_list = paginate.items  # 当前页的数据列表
+    news_dict_list = []
+    for news in news_list:
+        news_dict_list.append(news.to_basic_dict())
+    # 返回响应数据
+    return jsonify(errno=response_code.RET.OK, errmsg='OK', cid=cid, current_page=current_page, total_page=total_page,
+                   news_dict_list=news_dict_list)
 
 
 @index_blue.route('/')
