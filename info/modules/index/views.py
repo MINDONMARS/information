@@ -3,7 +3,7 @@ from flask import render_template, current_app
 from flask import session
 
 from info import constants
-from info.models import User, News
+from info.models import User, News, Category
 from . import index_blue
 
 
@@ -16,24 +16,30 @@ def index():
     user_id = session.get('user_id', None)
     # 用user_id在数据库中查询user对象
     user = None
+
     if user_id:
         try:
             user = User.query.get(user_id)
         except Exception as e:
             logging.error(e)
+
     # 点击排行
     news_clicks = None
+    categorys = None
     try:
         news_clicks = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
+        # 新闻分类
+        categorys = Category.query.all()
     except Exception as e:
         logging.error(e)
     # 构造渲染模板的上下文
     context = {
         'user': user.to_dict() if user else None,
-        'news_clicks': news_clicks
+        'news_clicks': news_clicks,
+        'categorys': categorys
     }
 
-    return render_template('news/index.html', context=context)
+    return render_template('news/index.html', context=context, categorys=categorys)
 
 
 @index_blue.route('/favicon.ico')
