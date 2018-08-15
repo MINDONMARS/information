@@ -7,6 +7,19 @@ from info.models import User, News, Category
 from . import index_blue
 
 
+@index_blue.route('/news_list')
+def index_news_list():
+    """
+    1. 接收参数: 当前页, 每页条数, 当前分类id
+    2. 校验参数是否齐全
+    3. 校验参数是否为整数
+    4. 根据参数分页查询
+    5. 生成响应
+    6. 返回响应
+    """
+
+
+
 @index_blue.route('/')
 def index():
     """
