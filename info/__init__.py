@@ -4,7 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from redis import StrictRedis
 from flask_session import Session
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf import CSRFProtect, csrf
 from config import configs
 
 
@@ -25,12 +25,28 @@ def create_app(config_name):
     Session(app)
     global redis_store
     redis_store = StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT, decode_responses=True)
-    # CSRFProtect(app)
+    CSRFProtect(app)
     # 注册蓝图
     from info.modules.index import index_blue
     app.register_blueprint(index_blue)
     from info.modules.passport import passport_blue
     app.register_blueprint(passport_blue)
+    # 导入自定义过滤器
+    from utils.comment import do_rank
+    app.add_template_filter(do_rank, 'rank')
+    # 在每一次相应中, 都写入一个cookie 值为csrf_token
+    @app.after_request
+    def after_request_set_csrf_token(response):
+        """
+        监听每一次请求之后的请求勾子, 给每一次响应中都写入一个cookie, 值为csrf_token
+        """
+        # 生成csrf_toke
+        #  generate_csrf()生成一个签名后的csrf_token并写入session
+        csfr_token = csrf.generate_csrf()
+        # 将csrf_token写入cookie
+        response.set_cookie('csrf_toke', csfr_token)
+        return response
+
     return app
 
 

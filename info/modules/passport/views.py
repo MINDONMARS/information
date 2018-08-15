@@ -15,7 +15,10 @@ from . import passport_blue
 
 @passport_blue.route('/logout')
 def logout():
-    pass
+    session.pop('user_id', None)
+    session.pop('mobile', None)
+    session.pop('nick_name', None)
+    return jsonify(errno=response_code.RET.OK, errmsg='退出成功')
 
 
 @passport_blue.route('/login', methods=['post'])
@@ -53,7 +56,7 @@ def login():
     # 状态保持
     session['user_id'] = user.id
     session['nick_name'] = user.nick_name
-    session['mobile'] = mobile
+    session['mobile'] = user.mobile
     return jsonify(errno=response_code.RET.OK, errmsg='登录成功')
 
 
@@ -152,9 +155,12 @@ def send_sms_code():
     logging.debug(sms_code)
     # CCP()单例发送验证码
     # result = CCP().send_sms_code(mobile, [sms_code, 5], 1)
-    result = CCP().send_sms_code(mobile, [sms_code, 5], 1)
-    if result != 0:
-        return jsonify(errno=response_code.RET.THIRDERR, errmsg='发送短信失败')
+
+    # 不发短信
+
+    # result = CCP().send_sms_code(mobile, [sms_code, 5], 1)
+    # if result != 0:
+    #     return jsonify(errno=response_code.RET.THIRDERR, errmsg='发送短信失败')
     # 发送成功, 将验证码存储到redis
     try:
         redis_store.set('SMS:' + mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
