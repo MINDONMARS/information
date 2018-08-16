@@ -2,7 +2,7 @@ import logging
 
 from flask import abort
 from flask import render_template, session
-from info import constants
+from info import constants, db
 from info.models import User, News
 from . import news_blue
 
@@ -36,6 +36,13 @@ def news_detail(news_id):
     if not news:
         # 抛出404 对404 统一处理
         abort(404)
+    # 重置新闻点击量
+    news.clicks += 1
+    try:
+        db.session.commit()
+    except Exception as e:
+        logging.error(e)
+        db.session.rollback()
 
     # 构造渲染详情页上下文
     context = {
