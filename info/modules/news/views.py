@@ -1,21 +1,22 @@
 import logging
-
-from flask import abort
-from flask import render_template, session
+from flask import abort, g, render_template
 from info import constants, db
-from info.models import User, News
+from info.models import News
 from . import news_blue
+from info.utils.comment import user_login_data
 
 
 @news_blue.route('/detail/<int:news_id>')
+@user_login_data
 def news_detail(news_id):
     """
     :param news_id: 新闻id
     :return: 新闻详情
     """
-    # 查询用户基本信息
-    from info.utils.comment import get_user_info
-    user = get_user_info()
+    # 查from info.utils.comment import get_user_info询用户基本信息
+    #
+    # user = get_user_info()
+    user = g.user
     # 查询点击排行信息
     news_clicks = None
     try:
@@ -38,11 +39,15 @@ def news_detail(news_id):
     except Exception as e:
         logging.error(e)
         db.session.rollback()
-
+    # 判断用户是否收藏过该新闻
+    is_collected = False
+    if news in user.collection_news:
+        is_collected = True
     # 构造渲染详情页上下文
     context = {
         'user': user.to_dict() if user else None,
         'news_clicks': news_clicks,
-        'news': news
+        'news': news,
+        'is_collected': is_collected
     }
     return render_template('news/detail.html', context=context)

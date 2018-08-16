@@ -1,8 +1,10 @@
 import logging
+
+from flask import g
 from flask import render_template, current_app, jsonify
 from flask import request
 from flask import session
-
+from info.utils.comment import user_login_data
 from info import constants
 from info import response_code
 from info.models import User, News, Category
@@ -57,14 +59,16 @@ def index_news_list():
 
 
 @index_blue.route('/')
+@user_login_data
 def index():
     """
     添加点击排行(右侧1-6)
     """
+    # 改用装饰器
     # 从session查询user_id
-    from info.utils.comment import get_user_info
-    user = get_user_info()
-
+    # from info.utils.comment import get_user_info
+    # user = get_user_info()
+    user = g.user
     # 点击排行
     news_clicks = None
     categorys = None
