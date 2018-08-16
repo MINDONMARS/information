@@ -1,12 +1,13 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from redis import StrictRedis
-from flask_session import Session
-from flask_wtf import CSRFProtect, csrf
-from config import configs
 
+from flask import Flask
+from flask_session import Session
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect, csrf
+from redis import StrictRedis
+
+from config import configs
 
 db = SQLAlchemy()
 redis_store = None  # type: StrictRedis
@@ -34,7 +35,7 @@ def create_app(config_name):
     from info.modules.news import news_blue
     app.register_blueprint(news_blue)
     # 导入自定义过滤器
-    from utils.comment import do_rank
+    from info.utils.comment import do_rank
     app.add_template_filter(do_rank, 'rank')
     # 在每一次相应中, 都写入一个cookie 值为csrf_token
     @app.after_request

@@ -1,15 +1,18 @@
-import logging, datetime
-import re, random
+import datetime
+import logging
+import random
+import re
+
 from flask import abort, jsonify
 from flask import make_response
 from flask import request
 from flask import session
+
 from info import constants, db
 from info import redis_store
 from info import response_code
-from info.libs.yuntongxun.sms import CCP
 from info.models import User
-from utils.captcha.captcha import captcha
+from info.utils.captcha.captcha import captcha
 from . import passport_blue
 
 

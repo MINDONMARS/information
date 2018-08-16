@@ -62,15 +62,8 @@ def index():
     添加点击排行(右侧1-6)
     """
     # 从session查询user_id
-    user_id = session.get('user_id', None)
-    # 用user_id在数据库中查询user对象
-    user = None
-
-    if user_id:
-        try:
-            user = User.query.get(user_id)
-        except Exception as e:
-            logging.error(e)
+    from info.utils.comment import get_user_info
+    user = get_user_info()
 
     # 点击排行
     news_clicks = None

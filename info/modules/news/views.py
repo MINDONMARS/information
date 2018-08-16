@@ -14,13 +14,8 @@ def news_detail(news_id):
     :return: 新闻详情
     """
     # 查询用户基本信息
-    user_id = session.get('user_id', None)
-    user = None
-    if user_id:
-        try:
-            user = User.query.get(user_id)
-        except Exception as e:
-            logging.error(e)
+    from info.utils.comment import get_user_info
+    user = get_user_info()
     # 查询点击排行信息
     news_clicks = None
     try:
