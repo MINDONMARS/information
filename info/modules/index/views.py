@@ -1,13 +1,11 @@
 import logging
-
 from flask import g
 from flask import render_template, current_app, jsonify
 from flask import request
-from flask import session
 from info.utils.comment import user_login_data
 from info import constants
 from info import response_code
-from info.models import User, News, Category
+from info.models import News, Category
 from . import index_blue
 
 

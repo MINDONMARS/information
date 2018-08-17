@@ -1,12 +1,10 @@
 import logging
 from logging.handlers import RotatingFileHandler
-
 from flask import Flask
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect, csrf
 from redis import StrictRedis
-
 from config import configs
 
 db = SQLAlchemy()
@@ -37,17 +35,19 @@ def create_app(config_name):
     # 导入自定义过滤器
     from info.utils.comment import do_rank
     app.add_template_filter(do_rank, 'rank')
+
+
     # 在每一次相应中, 都写入一个cookie 值为csrf_token
     @app.after_request
     def after_request_set_csrf_token(response):
+        """监听每一个请求之后逻辑的请求勾子
+        给每一个响应中，都写入一个cookie,值为csrf_token
         """
-        监听每一次请求之后的请求勾子, 给每一次响应中都写入一个cookie, 值为csrf_token
-        """
-        # 生成csrf_toke
-        #  generate_csrf()生成一个签名后的csrf_token并写入session
-        csfr_token = csrf.generate_csrf()
-        # 将csrf_token写入cookie
-        response.set_cookie('csrf_toke', csfr_token)
+        # 生成csrf_token
+        # generate_csrf() : 生成一个签名后的csrf_token,并写入到session
+        csrf_token = csrf.generate_csrf()
+        # 将csrf_token写入到cookie
+        response.set_cookie('csrf_token', csrf_token)
         return response
 
     return app

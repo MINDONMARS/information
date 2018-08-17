@@ -2,50 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock title %}</title>
+    <title>{% block title %}{# 新闻的title #}{% endblock title %}</title>
     <link rel="stylesheet" type="text/css" href="../../static/news/css/reset.css">
     <link rel="stylesheet" type="text/css" href="../../static/news/css/main.css">
     <script type="text/javascript" src="../../static/news/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript" src="../../static/news/js/main.js"></script>
-    {% block script %}{% endblock script %}
+    {% block script %}{# 网页特有的js #}{% endblock script %}
 </head>
 <body>
     <div class="header_con">
         <div class="header">
-            <a href="#" class="logo fl"><img src="../../static/news/images/logo.png" alt="logo"></a>
-        {% block catrgory_menu %}
-        
-        {% endblock catrgory_menu %}
-            <ul class="menu fl">
-                 {% for category in context.categorys %}
-                    {% if loop.index == 1 %}
-                        {# 最新的新闻默认是选中的 #}
-                        <li class="active" data-cid="{{ category.id }}"><a href="javascript:;">{{ category.name }}</a></li>
-                    {% else %}
-                        <li data-cid="{{ category.id }}"><a href="javascript:;">{{ category.name }}</a></li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
+            <a href="/" class="logo fl"><img src="../../static/news/images/logo.png" alt="logo"></a>
 
-            <!-- 用户登录后显示下面，隐藏上面 -->
+            {% block category_menu %}
+                {# 新闻分类 #}
+            {% endblock category_menu %}
+
+            {# 主页左上角用户数据的展示 #}
             {% if context.user %}
                 <div class="user_login fr">
                     <img src="{% if context.user.avatar_url %}{{ context.user.avatar_url }}{% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
                     <a href="#">{{ context.user.nick_name }}</a>
-                    <a href="javascript:;", onclick="logout()">退出</a>
+                    <a href="javascript:;" onclick="logout()">退出</a>
                 </div>
             {% else %}
                 <div class="user_btns fr">
                     <a href="javascript:;" class="login_btn">登录</a> / <a href="javascript:;" class="register_btn">注册</a>
-            </div>
+                </div>
             {% endif %}
+
         </div>
     </div>
-
+    
     {% block content %}
-
+        {# 新闻的正文 #}
     {% endblock content %}
-
 
     <div class="footer">        
         <div class="footer_links">
@@ -101,7 +92,7 @@
             <div class="form_group">
                 <input type="text" name="code_pwd" id="imagecode" class="code_pwd">
                 <div class="input_tip">图形验证码</div>
-                <img src="../../static/news/images/pic_code.png" class="get_pic_code" onclick="generateImageCode()">
+                <img src="" class="get_pic_code" onclick="generateImageCode()">
                 <div id="register-image-code-err" class="error_tip">图形码不能为空</div>
             </div>
             <div class="form_group">
