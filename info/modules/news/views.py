@@ -203,9 +203,29 @@ def news_detail(news_id):
         comments = Comment.query.filter(Comment.news_id == news_id).order_by(Comment.create_time.desc()).all()
     except Exception as e:
         logging.error(e)
+    # comment_dict_list = []
+    # for comment in comments:
+    #     comment_dict_list.append(comment.to_dict())
+    # 判断当前用户为哪些评论点了赞
+    comment_like_ids = []
+    if user:
+        try:
+            # 拿到当前用户模型对象 点赞的所有 评论的模型对象
+            comment_likes = CommentLike.query.filter(CommentLike.user_id == user.id).all()
+            # 把 这些评论的id放到列表里
+            comment_like_ids = [comment_like.comment_id for comment_like in comment_likes]
+        except Exception as e:
+            logging.error(e)
+    # 准备渲染的数据
     comment_dict_list = []
     for comment in comments:
-        comment_dict_list.append(comment.to_dict())
+        comment_dict = comment.to_dict()
+        # 给字典加个键值对
+        comment_dict['is_like'] = False
+        # 如果评论的id在用户点赞的列表里
+        if comment.id in comment_like_ids:
+            comment_dict['is_like'] = True
+        comment_dict_list.append(comment_dict)
     # 构造渲染详情页上下文
     context = {
         'user': user.to_dict() if user else None,
