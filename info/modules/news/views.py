@@ -230,7 +230,7 @@ def news_detail(news_id):
     context = {
         'user': user.to_dict() if user else None,
         'news_clicks': news_clicks,
-        'news': news,
+        'news': news.to_dict(),
         'is_collected': is_collected,
         'comments': comment_dict_list
     }

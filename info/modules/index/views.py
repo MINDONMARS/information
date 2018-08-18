@@ -69,21 +69,21 @@ def index():
     user = g.user
     # 点击排行
     news_clicks = None
-    categorys = None
+    categories = None
     try:
         news_clicks = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
         # 新闻分类
-        categorys = Category.query.all()
+        categories = Category.query.all()
     except Exception as e:
         logging.error(e)
     # 构造渲染模板的上下文
     context = {
         'user': user.to_dict() if user else None,
         'news_clicks': news_clicks,
-        'categorys': categorys
+        'categories': categories
     }
 
-    return render_template('news/index.html', context=context, categorys=categorys)
+    return render_template('news/index.html', context=context, categories=categories)
 
 
 @index_blue.route('/favicon.ico')
