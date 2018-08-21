@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.qiniu*
 .idea/
 logs/log
 # C extensions

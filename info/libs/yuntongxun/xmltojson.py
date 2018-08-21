@@ -144,7 +144,7 @@ class xmltojson:
 
         i = 0
 
-        # 获取二级元素的每一个子节点的名称和值
+        # 获取二级元素的每一个子节点的名称和值.
         for c in children:
             p = 0
             c_children = self.get_element_children(c)

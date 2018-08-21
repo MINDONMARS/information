@@ -1,12 +1,10 @@
-import logging
-from flask import render_template, g, redirect, request, url_for, jsonify
-from flask import session
-from info import constants
-from info import response_code, db
+from flask import render_template, g, redirect, request, url_for, jsonify, session
+from info import response_code, db, constants
 from info.models import Category, News
 from info.utils.file_storage import upload_file
 from . import user_blue
 from info.utils.comment import user_login_data
+import logging
 
 
 @user_blue.route('/news_list')
@@ -109,18 +107,18 @@ def user_collection():
     except Exception as e:
         logging.error(e)
         page = 1
-    news_list = []
+    user_news_list = []
     current_page = 1
     total_page = 1
     try:
         paginate = user.collection_news.paginate(page, constants.USER_COLLECTION_MAX_NEWS, False)
-        news_list = paginate.items
+        user_news_list = paginate.items
         current_page = paginate.page
         total_page = paginate.pages
     except Exception as e:
         logging.error(e)
     news_dict_list = []
-    for news in news_list:
+    for news in user_news_list:
         news_dict_list.append(news.to_basic_dict())
     context = {
         'news_dict_list': news_dict_list,

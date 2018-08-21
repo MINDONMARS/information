@@ -306,7 +306,7 @@ class REST:
         # 生成sig
         signature = self.AccountSid + self.AccountToken + self.Batch
         sig = md5(signature.encode()).hexdigest().upper()
-        # 拼接URL
+        # 拼接URL.
         url = "https://" + self.ServerIP + ":" + self.ServerPort + "/" + self.SoftVersion + "/Accounts/" + self.AccountSid + "/Calls/LandingCalls?sig=" + sig
         # 生成auth
         src = self.AccountSid + ":" + self.Batch
