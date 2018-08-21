@@ -1,5 +1,8 @@
 import datetime
-import logging, time
+import logging
+import time
+
+from flask import abort
 from flask import render_template, g, request, session, url_for, redirect
 from info import constants
 from info.models import User, News
@@ -7,9 +10,19 @@ from info.utils.comment import user_login_data
 from . import admin_blue
 
 
-@admin_blue.route('/news_review_detail')
-def news_review_detail():
-    return render_template('admin/news_review_detail.html')
+@admin_blue.route('/news_review_detail/<int:news_id>')
+def news_review_detail(news_id):
+    news = None
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        logging.error(e)
+    if not news:
+        abort(404)
+    context = {
+        'news': news.to_dict()
+    }
+    return render_template('admin/news_review_detail.html', context=context)
 
 
 @admin_blue.route('/news_review')
@@ -26,9 +39,12 @@ def news_review():
     total_page = 1
     try:
         if keyword:
-            paginate = News.query.filter(News.status != 0, News.title.contains(keyword)).order_by(News.create_time.desc()).paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
+            paginate = News.query.filter(News.status != 0, News.title.contains(keyword)).order_by(
+                News.create_time.desc()).paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
         else:
-            paginate = News.query.filter(News.status != 0).order_by(News.create_time.desc()).paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
+            paginate = News.query.filter(News.status != 0).order_by(News.create_time.desc()).paginate(page,
+                                                                                                      constants.ADMIN_NEWS_PAGE_MAX_COUNT,
+                                                                                                      False)
         current_page = paginate.page
         total_page = paginate.pages
         news_list = paginate.items
@@ -46,7 +62,6 @@ def news_review():
     return render_template('admin/news_review.html', context=context)
 
 
-
 @admin_blue.route('/user_list')
 def user_list():
     page = request.args.get('p', 1)
@@ -59,10 +74,10 @@ def user_list():
     total_page = 1
     current_page = 1
     try:
-        paginate = User.query.filter(User.is_admin == False).paginate(page, constants.ADMIN_USER_PAGE_MAX_COUNT, False)
+        paginate = User.query.filter(User.is_admin == 0).paginate(page, constants.ADMIN_USER_PAGE_MAX_COUNT, False)
         users = paginate.items
         total_page = paginate.pages
-        current_page= paginate.page
+        current_page = paginate.page
     except Exception as e:
         logging.error(e)
     user_dict_list = []
@@ -83,7 +98,7 @@ def user_count():
     month_count = 0
     day_count = 0
     try:
-        total_count = User.query.filter(User.is_admin != True).count()
+        total_count = User.query.filter(User.is_admin != 1).count()
     except Exception as e:
         logging.error(e)
     # 月新增
@@ -91,7 +106,7 @@ def user_count():
     month_begin_str = "%d-%02d-1" % (t.tm_year, t.tm_mon)
     month_begin_date = datetime.datetime.strptime(month_begin_str, "%Y-%m-%d")
     try:
-        month_count = User.query.filter(User.create_time >= month_begin_date, User.is_admin == False).count()
+        month_count = User.query.filter(User.create_time >= month_begin_date, User.is_admin == 0).count()
     except Exception as e:
         logging.error(e)
     # 日新增
@@ -99,7 +114,7 @@ def user_count():
     day_begin_str = "%d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
     day_begin_date = datetime.datetime.strptime(day_begin_str, "%Y-%m-%d")
     try:
-        day_count = User.query.filter(User.is_admin == False, User.create_time >= day_begin_date).count()
+        day_count = User.query.filter(User.is_admin == 0, User.create_time >= day_begin_date).count()
     except Exception as e:
         logging.error(e)
     today_begin = "%d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
@@ -114,7 +129,8 @@ def user_count():
         end_date = today_begin_date - datetime.timedelta(days=(i - 1))
 
         # 查询每一天的日活跃量
-        count = User.query.filter(User.is_admin==False, User.last_login>=begin_date, User.last_login<end_date).count()
+        count = User.query.filter(User.is_admin == 0, User.last_login >= begin_date,
+                                  User.last_login < end_date).count()
 
         active_count.append(count)
         # 需要将datetime类型的begin_date，转成时间字符串，因为前段的折线图框架需要的是字符串
