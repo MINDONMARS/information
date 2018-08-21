@@ -7,6 +7,37 @@ from info.utils.comment import user_login_data
 import logging
 
 
+@user_blue.route('/user_follow')
+@user_login_data
+def user_follow():
+    user = g.user
+    if not user:
+        return redirect(url_for('index.index'))
+    page = request.args.get('p', 1)
+    try:
+        page = int(page)
+    except Exception as e:
+        logging.error(e)
+        page = 1
+    current_page = 1
+    total_page = 1
+    followed_users = []
+    try:
+        paginate = user.followed.paginate(page, constants.USER_FOLLOWED_MAX_COUNT, False)
+        current_page = paginate.page
+        total_page = paginate.pages
+        followed_users = paginate.items
+    except Exception as e:
+        logging.error(e)
+    followed_user_dict_list = []
+    for followed_user in followed_users:
+        followed_user_dict_list.append(followed_user.to_dict())
+    context = {
+        'users': followed_user_dict_list,
+        'current_page': current_page,
+        'total_page': total_page
+    }
+    return render_template('news/user_follow.html', context=context)
 
 
 @user_blue.route('/news_list')

@@ -1,6 +1,8 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask
+from flask import g
+from flask import render_template
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect, csrf
@@ -53,6 +55,16 @@ def create_app(config_name):
         # 将csrf_token写入到cookie
         response.set_cookie('csrf_token', csrf_token)
         return response
+
+    # 对404统一处理
+    from info.utils.comment import user_login_data
+
+
+    @app.errorhandler(404)
+    @user_login_data
+    def page_not_found(e):
+        context = {'user': g.user.to_dict() if g.user else None}
+        return render_template('news/404.html', context=context)
 
     return app
 
