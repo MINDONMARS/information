@@ -7,6 +7,8 @@ from info.utils.comment import user_login_data
 import logging
 
 
+
+
 @user_blue.route('/news_list')
 @user_login_data
 def news_list():
@@ -32,7 +34,7 @@ def news_list():
 
     news_dict_list = []
     for news in user_news_list:
-        news_dict_list.append(news.to_basic_dict())
+        news_dict_list.append(news.to_review_dict())
     context = {
         'news_dict_list': news_dict_list,
         'total_page': total_page,

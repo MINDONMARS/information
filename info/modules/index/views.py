@@ -38,9 +38,9 @@ def index_news_list():
     try:
         if cid == 1:
             # 最新分类, 查询所有新闻按时间倒序排序
-            paginate = News.query.order_by(News.create_time.desc()).paginate(page, per_page, False)
+            paginate = News.query.filter(News.status == 0).order_by(News.create_time.desc()).paginate(page, per_page, False)
         else:
-            paginate = News.query.filter(News.category_id == cid).order_by(News.create_time.desc()).paginate(page, per_page, False)
+            paginate = News.query.filter(News.category_id == cid, News.status == 0).order_by(News.create_time.desc()).paginate(page, per_page, False)
     except Exception as e:
         logging.error(e)
         return jsonify(errno=response_code.RET.DBERR, errmsg='查询数据失败')

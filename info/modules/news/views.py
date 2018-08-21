@@ -1,9 +1,44 @@
 from flask import abort, g, render_template, request, jsonify
 from info import constants, db, response_code
-from info.models import News, Comment, CommentLike
+from info.models import News, Comment, CommentLike, User
 from . import news_blue
 from info.utils.comment import user_login_data
 import logging
+
+
+@news_blue.route('/followed_user', methods=['POST'])
+@user_login_data
+def followed_user():
+    user = g.user
+    if not user:
+        return jsonify(errno=response_code.RET.SESSIONERR, errmsg='用户未登录')
+    user_id = request.json.get('user_id')
+    action = request.json.get('action')
+    if not all([user_id, action]):
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='参数不全')
+    if action not in ['follow', 'unfollow']:
+        return jsonify(errno=response_code.RET.PARAMERR, errmsg='参数错误')
+    try:
+        author = User.query.get(user_id)
+    except Exception as e:
+        logging.error(e)
+        return jsonify(errno=response_code.RET.DBERR, errmsg='查询数据失败')
+    if not author:
+        return jsonify(errno=response_code.RET.NODATA, errmsg='用户不存在')
+    if action == 'follow':
+        if author not in user.followed:
+            user.followed.append(author)
+    else:
+        if author in user.followed:
+            user.followed.remove(author)
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logging.error(e)
+        return jsonify(errno=response_code.RET.DBERR, errmsg='操作失败')
+    return jsonify(errno=response_code.RET.OK, errmsg='OK')
+
 
 
 @news_blue.route('/comment_like', methods=['POST'])
@@ -226,12 +261,17 @@ def news_detail(news_id):
         if comment.id in comment_like_ids:
             comment_dict['is_like'] = True
         comment_dict_list.append(comment_dict)
+    is_followed = False
+    if user and news.user:
+        if news.user in user.followed:
+            is_followed = True
     # 构造渲染详情页上下文
     context = {
         'user': user.to_dict() if user else None,
         'news_clicks': news_clicks,
         'news': news.to_dict(),
         'is_collected': is_collected,
-        'comments': comment_dict_list
+        'comments': comment_dict_list,
+        'is_followed': is_followed
     }
     return render_template('news/detail.html', context=context)
