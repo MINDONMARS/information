@@ -6,14 +6,70 @@ from flask import abort, jsonify
 from flask import render_template, g, request, session, url_for, redirect
 from info import constants, db
 from info import response_code
-from info.models import User, News
+from info.models import User, News, Category
 from info.utils.comment import user_login_data
+from info.utils.file_storage import upload_file
 from . import admin_blue
 
 
-@admin_blue.route('/news_edit_detail')
-def news_edit_detail():
-    return render_template('admin/news_edit_detail.html')
+@admin_blue.route('/news_edit_detail/<int:news_id>', methods=['GET', 'POST'])
+def news_edit_detail(news_id):
+    if request.method == 'GET':
+        news = None
+        categories = []
+        try:
+            news = News.query.get(news_id)
+            categories = Category.query.all()
+            categories.pop(0)
+        except Exception as e:
+            logging.error(e)
+            abort(404)
+        if not news:
+            abort(404)
+
+        context = {
+            'news': news.to_dict(),
+            'categories': categories
+        }
+        return render_template('admin/news_edit_detail.html', context=context)
+    if request.method == 'POST':
+        title = request.form.get("title")
+        digest = request.form.get("digest")
+        content = request.form.get("content")
+        index_image = request.files.get("index_image")
+        category_id = request.form.get("category_id")
+        if not all([title, digest, content, category_id]):
+            return jsonify(errno=response_code.RET.PARAMERR, errmsg='缺少参数')
+        try:
+            news = News.query.get(news_id)
+        except Exception as e:
+            logging.error(e)
+            return jsonify(errno=response_code.RET.DBERR, errmsg='查询数据库失败')
+        if not news:
+            return jsonify(errno=response_code.RET.NODATA, errmsg='新闻不存在')
+        if index_image:
+            try:
+                index_image_data = index_image.read()
+            except Exception as e:
+                logging.error(e)
+                return jsonify(errno=response_code.RET.PARAMERR, errmsg='图片参数错误')
+            try:
+                key = upload_file(index_image_data)
+            except Exception as e:
+                logging.error(e)
+                return jsonify(errno=response_code.RET.THIRDERR, errmsg='上传图片到七牛云失败')
+            news.index_image_url = constants.QINIU_DOMIN_PREFIX + key
+        news.title = title
+        news.digest = digest
+        news.content = content
+        news.category_id = category_id
+        try:
+            db.session.commit()
+        except Exception as e:
+            logging.error(e)
+            db.session.rollback()
+            return jsonify(errno=response_code.RET.DBERR, errmsg='同步到数据库失败')
+        return jsonify(errno=response_code.RET.OK, errmsg='ok')
 
 
 @admin_blue.route('/news_edit')
