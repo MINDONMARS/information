@@ -12,6 +12,48 @@ from info.utils.file_storage import upload_file
 from . import admin_blue
 
 
+@admin_blue.route('/news_type', methods=['GET', 'POST'])
+def news_type():
+    if request.method == 'GET':
+        categories = []
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            logging.error(e)
+            abort(404)
+        categories.pop(0)
+
+        context = {
+            'categories': categories
+        }
+        return render_template('admin/news_type.html', context=context)
+    if request.method == 'POST':
+        cid = request.json.get('id')
+        cname = request.json.get('name')
+        if not cname:
+            return jsonify(errno=response_code.RET.PARAMERR, errmsg='缺少参数')
+        if not cid:
+            category = Category()
+            category.name = cname
+            db.session.add(category)
+        else:
+            try:
+                categories = Category.query.get(cid)
+            except Exception as e:
+                logging.error(e)
+                return jsonify(errno=response_code.RET.DBERR, errmsg='查询数据库失败')
+            if not categories:
+                return jsonify(errno=response_code.RET.NODATA, errmsg='分类不存在')
+            categories.name = cname
+        try:
+            db.session.commit()
+        except Exception as e:
+            logging.error(e)
+            db.session.rollback()
+            return jsonify(errno=response_code.RET.DBERR, errmsg='同步数据库失败')
+        return jsonify(errno=response_code.RET.OK, errmsg='OK')
+
+
 @admin_blue.route('/news_edit_detail/<int:news_id>', methods=['GET', 'POST'])
 def news_edit_detail(news_id):
     if request.method == 'GET':
